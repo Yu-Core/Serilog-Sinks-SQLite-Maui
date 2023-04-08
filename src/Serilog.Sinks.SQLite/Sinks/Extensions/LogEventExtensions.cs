@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 using Serilog.Events;
+using System.Dynamic;
+using System.Text.Json;
 
 namespace Serilog.Sinks.Extensions
 {
@@ -25,7 +23,7 @@ namespace Serilog.Sinks.Extensions
     {
         internal static string Json(this LogEvent logEvent, bool storeTimestampInUtc = false)
         {
-            return JsonConvert.SerializeObject(ConvertToDictionary(logEvent, storeTimestampInUtc));
+            return JsonSerializer.Serialize(ConvertToDictionary(logEvent, storeTimestampInUtc));
         }
 
         internal static IDictionary<string, object> Dictionary(
@@ -38,7 +36,7 @@ namespace Serilog.Sinks.Extensions
 
         internal static string Json(this IReadOnlyDictionary<string, LogEventPropertyValue> properties)
         {
-            return JsonConvert.SerializeObject(ConvertToDictionary(properties));
+            return JsonSerializer.Serialize(ConvertToDictionary(properties));
         }
 
         internal static IDictionary<string, object> Dictionary(
