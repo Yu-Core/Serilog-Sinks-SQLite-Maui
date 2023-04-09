@@ -17,3 +17,20 @@ I made the following changes
 //    sqliteDbPath = Path.Combine(Path.GetDirectoryName(basePath) ?? throw new NullReferenceException(), sqliteDbPath);
 //}
 ```
+
+## Getting started
+Install [Serilog.Sinks.SQLite.Maui](https://www.nuget.org/packages/Serilog.Sinks.SQLite.Maui) from NuGet
+
+```PowerShell
+Install-Package Serilog.Sinks.SQLite.Maui
+```
+
+Configure logger by calling `WriteTo.SQLite()`
+
+```C#
+var logger = new LoggerConfiguration()
+    .WriteTo.SQLite(@"Logs\log.db")
+    .CreateLogger();
+    
+logger.Information("This informational message will be written to SQLite database");
+```
