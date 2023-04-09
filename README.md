@@ -1,8 +1,10 @@
+# Serilog.Sinks.SQLite.Maui
+
 The fork of [Serilog.Sinks.SQLite](https://github.com/saleem-mirza/serilog-sinks-sqlite)
 
 Referring to this issue https://github.com/saleem-mirza/serilog-sinks-sqlite/issues/24#issuecomment-608555305
 
-It can run normally in Maui
+It can run normally in Maui(.NET 7)
 
 I made the following changes
 
