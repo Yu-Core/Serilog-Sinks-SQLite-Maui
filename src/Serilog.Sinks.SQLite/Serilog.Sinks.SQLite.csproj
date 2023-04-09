@@ -18,6 +18,7 @@ It can run normally in Maui(.NET 7)
     <PackageTags>serilog;logging;SQLite</PackageTags>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

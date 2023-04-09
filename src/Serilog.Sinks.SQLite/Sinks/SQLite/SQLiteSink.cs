@@ -56,6 +56,7 @@ namespace Serilog.Sinks.SQLite
         {
             var conn = GetSqLiteAsyncConnection();
             CreateSqlTable(conn);
+            conn.CloseAsync();
         }
 
         private SQLiteAsyncConnection GetSqLiteAsyncConnection()
