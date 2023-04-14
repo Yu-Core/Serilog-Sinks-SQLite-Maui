@@ -54,19 +54,18 @@ namespace Serilog.Sinks.SQLite
 
         private void InitializeDatabase()
         {
-            var conn = GetSqLiteAsyncConnection();
+            using var conn = GetSqLiteAsyncConnection();
             CreateSqlTable(conn);
-            conn.CloseAsync();
         }
 
-        private SQLiteAsyncConnection GetSqLiteAsyncConnection()
+        private SQLiteConnection GetSqLiteAsyncConnection()
         {
             var sqlConString = new SQLiteConnectionString(_databasePath, true);
-            var sqLiteConnection = new SQLiteAsyncConnection(sqlConString);
+            var sqLiteConnection = new SQLiteConnection(sqlConString);
             return sqLiteConnection;
         }
 
-        private void CreateSqlTable(SQLiteAsyncConnection sqlConnection)
+        private void CreateSqlTable(SQLiteConnection sqlConnection)
         {
             var colDefs = "id INTEGER PRIMARY KEY AUTOINCREMENT,";
             colDefs += "Timestamp TEXT,";
@@ -77,13 +76,12 @@ namespace Serilog.Sinks.SQLite
 
             var sqlCreateText = $"CREATE TABLE IF NOT EXISTS {_tableName} ({colDefs})";
 
-            sqlConnection.ExecuteAsync(sqlCreateText).ConfigureAwait(false);
+            sqlConnection.Execute(sqlCreateText);
         }
 
-        private void TruncateLog(SQLiteAsyncConnection sqlConnection)
+        private void TruncateLog(SQLiteConnection sqlConnection)
         {
-            sqlConnection.ExecuteAsync($"DELETE FROM {_tableName}")
-                .ConfigureAwait(false);
+            sqlConnection.Execute($"DELETE FROM {_tableName}");
         }
 
 
@@ -94,11 +92,11 @@ namespace Serilog.Sinks.SQLite
             await semaphoreSlim.WaitAsync().ConfigureAwait(false);
             try
             {
-                var sqlConnection = GetSqLiteAsyncConnection();
+                using var sqlConnection = GetSqLiteAsyncConnection();
 
                 try
                 {
-                    await WriteToDatabaseAsync(logEventsBatch, sqlConnection).ConfigureAwait(false);
+                    WriteToDatabase(logEventsBatch, sqlConnection);
                     return true;
                 }
                 catch (SQLiteException e)
@@ -124,7 +122,7 @@ namespace Serilog.Sinks.SQLite
                     File.Copy(_databasePath, newFilePath, true);
 
                     TruncateLog(sqlConnection);
-                    await WriteToDatabaseAsync(logEventsBatch, sqlConnection).ConfigureAwait(false);
+                    WriteToDatabase(logEventsBatch, sqlConnection);
 
                     SelfLog.WriteLine($"Rolling database to {newFilePath}");
                     return true;
@@ -141,8 +139,8 @@ namespace Serilog.Sinks.SQLite
             }
         }
 
-        private async Task WriteToDatabaseAsync(ICollection<LogEvent> logEventsBatch,
-            SQLiteAsyncConnection sqlConnection)
+        private void WriteToDatabase(ICollection<LogEvent> logEventsBatch,
+            SQLiteConnection sqlConnection)
         {
             var sqlInsertText = "INSERT INTO {0} (Timestamp, Level, Exception, RenderedMessage, Properties)";
             sqlInsertText += " VALUES (@timeStamp, @level, @exception, @renderedMessage, @properties)";
@@ -158,14 +156,14 @@ namespace Serilog.Sinks.SQLite
                 var message = logEvent.MessageTemplate.Text;
                 var properties = logEvent.Properties.Count > 0 ? logEvent.Properties.Json() : string.Empty;
 
-                await sqlConnection.ExecuteAsync(sqlInsertText, new object[]
+                sqlConnection.Execute(sqlInsertText, new object[]
                 {
                 logTimeStamp,
                 logLevel,
                 exception,
                 message,
                 properties
-                }).ConfigureAwait(false);
+                });
             }
         }
     }
