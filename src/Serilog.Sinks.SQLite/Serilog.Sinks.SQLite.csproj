@@ -1,35 +1,36 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <PackageId>Serilog.Sinks.SQLite.Maui</PackageId>
-    <Authors>Yu-Core</Authors>
-    <Product>Serilog.Sinks.SQLite.Maui</Product>
-    <Description>Serilog event sink that writes to SQLite database using SqliteNet-Pcl.
-The fork of Serilog.Sinks.SQLite https://github.com/saleem-mirza/serilog-sinks-sqlite
-Referring to this issue saleem-mirza#24 (comment)
-It can run normally in Maui(.NET 8)
-</Description>
-    <PackageProjectUrl>http://serilog.net</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Yu-Core/serilog-sinks-sqlite-maui</RepositoryUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>serilog;logging;SQLite</PackageTags>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<PackageId>Serilog.Sinks.SQLite.Maui</PackageId>
+		<Authors>Yu-Core</Authors>
+		<Product>Serilog.Sinks.SQLite.Maui</Product>
+		<Description>
+			Serilog event sink that writes to SQLite database using SqliteNet-Pcl.
+			The fork of Serilog.Sinks.SQLite https://github.com/saleem-mirza/serilog-sinks-sqlite
+			Referring to this issue saleem-mirza#24 (comment)
+			It can run normally in Maui(.NET 8)
+		</Description>
+		<PackageProjectUrl>http://serilog.net</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Yu-Core/serilog-sinks-sqlite-maui</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageTags>serilog;logging;SQLite</PackageTags>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Serilog" Version="3.1.1" />
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Serilog" Version="4.0.0" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 	</ItemGroup>
 </Project>
