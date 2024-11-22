@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<PackageId>Serilog.Sinks.SQLite.Maui</PackageId>
 		<Authors>Yu-Core</Authors>
@@ -10,7 +10,7 @@
 			Serilog event sink that writes to SQLite database using SqliteNet-Pcl.
 			The fork of Serilog.Sinks.SQLite https://github.com/saleem-mirza/serilog-sinks-sqlite
 			Referring to this issue saleem-mirza#24 (comment)
-			It can run normally in Maui(.NET 8)
+			It can run normally in Maui
 		</Description>
 		<PackageProjectUrl>http://serilog.net</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Yu-Core/serilog-sinks-sqlite-maui</RepositoryUrl>
