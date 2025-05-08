@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
-using Newtonsoft.Json;
-using Serilog.Events;
+using System.Text.Json;
 
 namespace Serilog.Sinks.Extensions
 {
@@ -25,7 +25,7 @@ namespace Serilog.Sinks.Extensions
     {
         internal static string Json(this LogEvent logEvent, bool storeTimestampInUtc = false)
         {
-            return JsonConvert.SerializeObject(ConvertToDictionary(logEvent, storeTimestampInUtc));
+            return JsonSerializer.Serialize(ConvertToDictionary(logEvent, storeTimestampInUtc));
         }
 
         internal static IDictionary<string, object> Dictionary(
@@ -38,7 +38,7 @@ namespace Serilog.Sinks.Extensions
 
         internal static string Json(this IReadOnlyDictionary<string, LogEventPropertyValue> properties)
         {
-            return JsonConvert.SerializeObject(ConvertToDictionary(properties));
+            return JsonSerializer.Serialize(ConvertToDictionary(properties));
         }
 
         internal static IDictionary<string, object> Dictionary(
@@ -85,9 +85,11 @@ namespace Serilog.Sinks.Extensions
                 return value.Value;
 
             // ReSharper disable once SuspiciousTypeConversion.Global
-            if (data is DictionaryValue dictValue) {
+            if (data is DictionaryValue dictValue)
+            {
                 var expObject = new ExpandoObject() as IDictionary<string, object>;
-                foreach (var item in dictValue.Elements) {
+                foreach (var item in dictValue.Elements)
+                {
                     if (item.Key.Value is string key)
                         expObject.Add(key, Simplify(item.Value));
                 }
@@ -102,7 +104,8 @@ namespace Serilog.Sinks.Extensions
                 return null;
 
             {
-                try {
+                try
+                {
                     if (str.TypeTag == null)
                         return str.Properties.ToDictionary(p => p.Name, p => Simplify(p.Value));
 
@@ -119,7 +122,8 @@ namespace Serilog.Sinks.Extensions
 
                     return expObject;
                 }
-                catch (Exception ex) {
+                catch (Exception ex)
+                {
                     Console.WriteLine(ex.Message);
                 }
             }

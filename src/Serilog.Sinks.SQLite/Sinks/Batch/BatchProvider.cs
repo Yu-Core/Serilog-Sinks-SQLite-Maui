@@ -46,53 +46,61 @@ namespace Serilog.Sinks.Batch
         protected BatchProvider(int batchSize = 100, int maxBufferSize = 25_000)
         {
             _maxBufferSize = Math.Min(Math.Max(5_000, maxBufferSize), MaxSupportedBufferSize);
-            _batchSize     = Math.Min(Math.Max(batchSize, 1), MaxSupportedBatchSize);
+            _batchSize = Math.Min(Math.Max(batchSize, 1), MaxSupportedBatchSize);
 
-            _logEventBatch         = new ConcurrentQueue<LogEvent>();
+            _logEventBatch = new ConcurrentQueue<LogEvent>();
             _batchEventsCollection = new BlockingCollection<IList<LogEvent>>();
-            _eventsCollection      = new BlockingCollection<LogEvent>(maxBufferSize);
+            _eventsCollection = new BlockingCollection<LogEvent>(maxBufferSize);
 
-            _batchTask     = Task.Factory.StartNew(PumpAsync, TaskCreationOptions.LongRunning);
-            _timerTask     = Task.Factory.StartNew(TimerPump, TaskCreationOptions.LongRunning);
+            _batchTask = Task.Factory.StartNew(PumpAsync, TaskCreationOptions.LongRunning);
+            _timerTask = Task.Factory.StartNew(TimerPump, TaskCreationOptions.LongRunning);
             _eventPumpTask = Task.Factory.StartNew(EventPump, TaskCreationOptions.LongRunning);
         }
 
         private async Task PumpAsync()
         {
-            try {
-                while (!_batchEventsCollection.IsCompleted) {
+            try
+            {
+                while (!_batchEventsCollection.IsCompleted)
+                {
                     var logEvents = _batchEventsCollection.Take(_cancellationTokenSource.Token);
                     SelfLog.WriteLine($"Sending batch of {logEvents.Count} logs");
 
                     var retValue = await WriteLogEventAsync(logEvents).ConfigureAwait(false);
-                    if (retValue) {
+                    if (retValue)
+                    {
                         Interlocked.Add(ref _numMessages, -1 * logEvents.Count);
                     }
-                    else {
+                    else
+                    {
                         SelfLog.WriteLine($"Retrying after {_transientThresholdSpan.TotalSeconds} seconds...");
 
                         await Task.Delay(_transientThresholdSpan).ConfigureAwait(false);
 
-                        if (!_batchEventsCollection.IsAddingCompleted) {
+                        if (!_batchEventsCollection.IsAddingCompleted)
+                        {
                             _batchEventsCollection.Add(logEvents);
                         }
                     }
 
-                    if (_cancellationTokenSource.IsCancellationRequested) {
+                    if (_cancellationTokenSource.IsCancellationRequested)
+                    {
                         _cancellationTokenSource.Token.ThrowIfCancellationRequested();
                     }
                 }
             }
             catch (InvalidOperationException) { }
             catch (OperationCanceledException) { }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 SelfLog.WriteLine(ex.Message);
             }
         }
 
         private void TimerPump()
         {
-            while (!_canStop) {
+            while (!_canStop)
+            {
                 _timerResetEvent.WaitOne(_timerThresholdSpan);
                 FlushLogEventBatch();
             }
@@ -100,49 +108,60 @@ namespace Serilog.Sinks.Batch
 
         private void EventPump()
         {
-            try {
-                while (!_eventsCollection.IsCompleted) {
+            try
+            {
+                while (!_eventsCollection.IsCompleted)
+                {
                     var logEvent = _eventsCollection.Take(_cancellationTokenSource.Token);
                     _logEventBatch.Enqueue(logEvent);
 
-                    if (_logEventBatch.Count >= _batchSize) {
+                    if (_logEventBatch.Count >= _batchSize)
+                    {
                         FlushLogEventBatch();
                     }
                 }
             }
             catch (InvalidOperationException) { }
             catch (OperationCanceledException) { }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 SelfLog.WriteLine(ex.Message);
             }
         }
 
         private void FlushLogEventBatch()
         {
-            try {
+            try
+            {
                 _semaphoreSlim.Wait(_cancellationTokenSource.Token);
 
-                if (!_logEventBatch.Any()) {
+                if (!_logEventBatch.Any())
+                {
                     return;
                 }
 
                 var logEventBatchSize = _logEventBatch.Count >= _batchSize ? _batchSize : _logEventBatch.Count;
                 var logEventList = new List<LogEvent>();
 
-                for (var i = 0; i < logEventBatchSize; i++) {
-                    if (_logEventBatch.TryDequeue(out LogEvent logEvent)) {
+                for (var i = 0; i < logEventBatchSize; i++)
+                {
+                    if (_logEventBatch.TryDequeue(out LogEvent logEvent))
+                    {
                         logEventList.Add(logEvent);
                     }
                 }
 
-                if (!_batchEventsCollection.IsAddingCompleted) {
+                if (!_batchEventsCollection.IsAddingCompleted)
+                {
                     _batchEventsCollection.Add(logEventList);
                 }
             }
             catch (InvalidOperationException) { }
             catch (OperationCanceledException) { }
-            finally {
-                if (!_cancellationTokenSource.IsCancellationRequested) {
+            finally
+            {
+                if (!_cancellationTokenSource.IsCancellationRequested)
+                {
                     _semaphoreSlim.Release();
                 }
             }
@@ -171,7 +190,8 @@ namespace Serilog.Sinks.Batch
             if (_disposedValue)
                 return;
 
-            if (disposing) {
+            if (disposing)
+            {
                 FlushAndCloseEventHandlers();
                 _semaphoreSlim.Dispose();
 
@@ -183,7 +203,8 @@ namespace Serilog.Sinks.Batch
 
         private void FlushAndCloseEventHandlers()
         {
-            try {
+            try
+            {
                 SelfLog.WriteLine("Halting sink...");
 
                 _canStop = true;
@@ -191,10 +212,12 @@ namespace Serilog.Sinks.Batch
                 _eventsCollection.CompleteAdding();
 
                 // Flush events collection
-                while (!_eventsCollection.IsCompleted) {
+                while (!_eventsCollection.IsCompleted)
+                {
                     var logEvent = _eventsCollection.Take();
                     _logEventBatch.Enqueue(logEvent);
-                    if (_logEventBatch.Count >= _batchSize) {
+                    if (_logEventBatch.Count >= _batchSize)
+                    {
                         FlushLogEventBatch();
                     }
                 }
@@ -207,15 +230,17 @@ namespace Serilog.Sinks.Batch
                 _cancellationTokenSource.Cancel();
 
                 // Flush events batch
-                while (!_batchEventsCollection.IsCompleted) {
+                while (!_batchEventsCollection.IsCompleted)
+                {
                     var eventBatch = _batchEventsCollection.Take();
                     WriteLogEventAsync(eventBatch).GetAwaiter().GetResult();
                     SelfLog.WriteLine($"Sending batch of {eventBatch.Count} logs");
                 }
 
-                Task.WaitAll(new[] {_eventPumpTask, _batchTask, _timerTask}, TimeSpan.FromSeconds(60));
+                Task.WaitAll(new[] { _eventPumpTask, _batchTask, _timerTask }, TimeSpan.FromSeconds(60));
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 SelfLog.WriteLine(ex.Message);
             }
         }
